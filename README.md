@@ -6,18 +6,6 @@ Every graphic the skills produce is a **single self-contained HTML/SVG snippet**
 
 ## The style gallery
 
-| Skill | Based on | Ideology | Best for |
-|---|---|---|---|
-| [`style-cursor`](skills/style-cursor/SKILL.md) | [cursor.com/blog](https://cursor.com/blog/git-at-any-scale) | Hairline schematics in tiny monospace caps; color means semantics, time means physics (24fps simulation clock, linear packet travel) | Infra, protocols, storage, systems |
-| [`style-planetscale`](skills/style-planetscale/SKILL.md) | [planetscale.com/blog](https://planetscale.com/blog/massively-parallel-postgres-backups) | Dashed-inset boxes, database cylinders, Manhattan connectors with marching ants, no arrowheads — ambient loops or interactive labs | Databases, sharding, replication, parallelism |
-| [`style-samwho`](skills/style-samwho/SKILL.md) | [samwho.dev](https://samwho.dev/load-balancing/) | Playful flat simulations in the Okabe-Ito colorblind-safe palette; the concept becomes a toy that runs forever | Algorithms, queues, load balancing |
-| [`style-comeau`](skills/style-comeau/SKILL.md) | [joshwcomeau.com](https://www.joshwcomeau.com/) | Whimsical playgrounds on strict HSL design tokens; CSS transitions animate, JS only flips state | Frontend/CSS topics, tutorials |
-| [`style-ciechanowski`](skills/style-ciechanowski/SKILL.md) | [ciechanow.ski](https://ciechanow.ski/mechanical-watch/) | "Lite" adaptation: slider-scrubbed mechanisms with mechanically correct ratios, prose color-linked to parts | Geometric/mechanical/continuous processes |
-
-Each style skill carries the exact palette (hex values pulled from the live sites), typography, line weights, motion grammar, a step-by-step recipe, and a complete verified example in `references/example.html`. Users can ask to **copy a style exactly** or use one as a **remix base**.
-
-### Example output
-
 Recordings of each style's bundled `references/example.html` (the interactive ones are being driven by script — sliders scrubbed, toggles clicked):
 
 | `style-cursor` — a client fetching git objects | `style-planetscale` — router fanning out to shards |
@@ -31,6 +19,16 @@ Recordings of each style's bundled `references/example.html` (the interactive on
 | `style-ciechanowski` — slider-scrubbed meshing gears | |
 |---|---|
 | ![Ciechanowski-style example](assets/gears.gif) | |
+
+| Skill | Based on | Ideology | Best for |
+|---|---|---|---|
+| [`style-cursor`](skills/style-cursor/SKILL.md) | [cursor.com/blog](https://cursor.com/blog/git-at-any-scale) | Hairline schematics in tiny monospace caps; color means semantics, time means physics (24fps simulation clock, linear packet travel) | Infra, protocols, storage, systems |
+| [`style-planetscale`](skills/style-planetscale/SKILL.md) | [planetscale.com/blog](https://planetscale.com/blog/massively-parallel-postgres-backups) | Dashed-inset boxes, database cylinders, Manhattan connectors with marching ants, no arrowheads — ambient loops or interactive labs | Databases, sharding, replication, parallelism |
+| [`style-samwho`](skills/style-samwho/SKILL.md) | [samwho.dev](https://samwho.dev/load-balancing/) | Playful flat simulations in the Okabe-Ito colorblind-safe palette; the concept becomes a toy that runs forever | Algorithms, queues, load balancing |
+| [`style-comeau`](skills/style-comeau/SKILL.md) | [joshwcomeau.com](https://www.joshwcomeau.com/) | Whimsical playgrounds on strict HSL design tokens; CSS transitions animate, JS only flips state | Frontend/CSS topics, tutorials |
+| [`style-ciechanowski`](skills/style-ciechanowski/SKILL.md) | [ciechanow.ski](https://ciechanow.ski/mechanical-watch/) | "Lite" adaptation: slider-scrubbed mechanisms with mechanically correct ratios, prose color-linked to parts | Geometric/mechanical/continuous processes |
+
+Each style skill carries the exact palette (hex values pulled from the live sites), typography, line weights, motion grammar, a step-by-step recipe, and a complete verified example in `references/example.html`. Users can ask to **copy a style exactly** or use one as a **remix base**.
 
 ## How it works
 
