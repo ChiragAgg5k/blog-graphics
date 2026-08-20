@@ -16,6 +16,22 @@ Every graphic the skills produce is a **single self-contained HTML/SVG snippet**
 
 Each style skill carries the exact palette (hex values pulled from the live sites), typography, line weights, motion grammar, a step-by-step recipe, and a complete verified example in `references/example.html`. Users can ask to **copy a style exactly** or use one as a **remix base**.
 
+### Example output
+
+Recordings of each style's bundled `references/example.html` (the interactive ones are being driven by script — sliders scrubbed, toggles clicked):
+
+| `style-cursor` — a client fetching git objects | `style-planetscale` — router fanning out to shards |
+|---|---|
+| ![Cursor-style example](assets/cursor.gif) | ![PlanetScale-style example](assets/planetscale.gif) |
+
+| `style-samwho` — round-robin load balancer toy | `style-comeau` — spring-easing playground |
+|---|---|
+| ![samwho-style example](assets/samwho.gif) | ![Comeau-style example](assets/comeau.gif) |
+
+| `style-ciechanowski` — slider-scrubbed meshing gears | |
+|---|---|
+| ![Ciechanowski-style example](assets/gears.gif) | |
+
 ## How it works
 
 The core [`blog-graphics`](skills/blog-graphics/SKILL.md) skill is the entry point. It enforces a process designed to keep an AI agent on rails:
