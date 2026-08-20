@@ -1,0 +1,147 @@
+<!-- Cursor-style example: a client fetching pack objects over the network.
+     The snippet is everything inside <figure class="gx1">…</figure>; the rest is preview shell.
+     Demonstrates: token/tone system, key-bar entity cards, network lane, packets with
+     linear travel, 24fps clock, data-state flips, counter, loop with pause. -->
+<figure class="gx1" style="max-width:760px;width:100%;margin-inline:auto">
+<style>
+.gx1 { --bg:#f7f7f4; --ink:#26251e; --tone-accent:#f54e00; --tone-data:#2268ff; --tone-commit:#019f52; }
+@media (prefers-color-scheme: dark) { .gx1 { --bg:#14120b; --ink:#edecec; } }
+.gx1 { margin:0; border:1px solid color-mix(in srgb, var(--ink) 10%, transparent); border-radius:8px; padding:16px; background:var(--bg); }
+.gx1 svg { display:block; width:100%; height:auto; font-family:ui-monospace,SFMono-Regular,Menlo,monospace; }
+.gx1 [data-tone=data]   { --tone: var(--tone-data); }
+.gx1 [data-tone=commit] { --tone: var(--tone-commit); }
+.gx1 [data-tone=accent] { --tone: var(--tone-accent); }
+.gx1 .card-frame { fill: color-mix(in srgb, var(--tone) 12%, transparent); stroke: var(--tone); stroke-width:1; transition: fill .14s, stroke .14s, stroke-width .14s; }
+.gx1 [data-state=pending] .card-frame { fill:transparent; stroke: color-mix(in srgb, var(--tone) 40%, transparent); stroke-dasharray:3 2.5; }
+.gx1 [data-state=active] .card-frame { stroke-width:1.75; }
+.gx1 .card-key { fill: var(--tone); transition: fill .14s; }
+.gx1 [data-state=pending] .card-key { fill: color-mix(in srgb, var(--tone) 40%, transparent); }
+.gx1 .label { fill: var(--ink); font-size:8px; font-weight:700; letter-spacing:.04em; }
+.gx1 .meta  { fill: color-mix(in srgb, var(--ink) 60%, transparent); font-size:7px; }
+.gx1 .title { fill: color-mix(in srgb, var(--ink) 60%, transparent); font-size:8px; font-weight:700; letter-spacing:.06em; }
+.gx1 .lane  { stroke: color-mix(in srgb, var(--ink) 34%, var(--bg)); stroke-width:1; stroke-dasharray:3 5; }
+.gx1 .packet rect { fill: color-mix(in srgb, var(--tone) 12%, var(--bg)); stroke: var(--tone); stroke-width:1; }
+.gx1 .packet text { fill: var(--ink); font-size:7px; font-weight:700; }
+.gx1 .packet { opacity:0; transition: opacity .2s ease-out; }
+.gx1 .packet[data-live="1"] { opacity:1; }
+.gx1 .counter { fill: color-mix(in srgb, var(--ink) 60%, transparent); font-size:8px; }
+@media (prefers-reduced-motion: reduce) { .gx1 .packet { display:none; } }
+</style>
+<svg viewBox="0 0 720 260" role="img"
+     aria-label="Animated diagram: a client requests three git objects across a network lane. GET packets travel right to the server, object packets return, and each dashed pending object card on the client fills in as its data arrives, while a counter ticks from 0 of 3 to 3 of 3, then the loop restarts.">
+  <text class="title" x="90" y="24" text-anchor="middle">CLIENT</text>
+  <text class="title" x="630" y="24" text-anchor="middle">SERVER</text>
+  <text class="title" x="360" y="24" text-anchor="middle">NETWORK</text>
+  <line class="lane" x1="360" y1="36" x2="360" y2="236"/>
+
+  <g id="gx1-obj-0" data-tone="commit" data-state="pending" transform="translate(36 48)">
+    <rect class="card-frame" width="108" height="48" rx="3"/><rect class="card-key" width="4" height="48" rx="2"/>
+    <text class="label" x="12" y="22">?</text><text class="meta" x="12" y="34">commit &#183; c8f3</text>
+  </g>
+  <g id="gx1-obj-1" data-tone="data" data-state="pending" transform="translate(36 112)">
+    <rect class="card-frame" width="108" height="48" rx="3"/><rect class="card-key" width="4" height="48" rx="2"/>
+    <text class="label" x="12" y="22">?</text><text class="meta" x="12" y="34">tree &#183; 9b12</text>
+  </g>
+  <g id="gx1-obj-2" data-tone="data" data-state="pending" transform="translate(36 176)">
+    <rect class="card-frame" width="108" height="48" rx="3"/><rect class="card-key" width="4" height="48" rx="2"/>
+    <text class="label" x="12" y="22">?</text><text class="meta" x="12" y="34">blob &#183; e1a0</text>
+  </g>
+
+  <g data-tone="accent" data-state="active" transform="translate(576 112)">
+    <rect class="card-frame" width="108" height="48" rx="3"/><rect class="card-key" width="4" height="48" rx="2"/>
+    <text class="label" x="12" y="22">PACKFILE</text><text class="meta" x="12" y="34">54 objects</text>
+  </g>
+
+  <g id="gx1-packets"></g>
+  <text id="gx1-counter" class="counter" x="684" y="248" text-anchor="end">objects 0/3 &#183; round-trips 0</text>
+</svg>
+<script>
+(() => {
+  const svg = document.currentScript.closest('figure').querySelector('svg');
+  const NS = 'http://www.w3.org/2000/svg';
+  const objects = [0, 1, 2].map((i) => svg.querySelector(`#gx1-obj-${i}`));
+  const labels = ['c8f3', '9b12', 'e1a0'];
+  const rows = [72, 136, 200];
+
+  // Event schedule: latency 400ms each way per object, staggered requests. Loop = 8s.
+  const DURATION = 8000, PAUSE = 1000;
+  const events = [0, 1, 2].flatMap((i) => [
+    { kind: 'get', row: i, start: 400 + i * 1400, end: 1600 + i * 1400 },
+    { kind: 'obj', row: i, start: 1800 + i * 1400, end: 3000 + i * 1400 },
+  ]);
+
+  const packets = new Map();
+  function packet(event) {
+    const g = document.createElementNS(NS, 'g');
+    g.setAttribute('class', 'packet');
+    g.setAttribute('data-tone', event.kind === 'get' ? 'accent' : 'data');
+    const r = document.createElementNS(NS, 'rect');
+    r.setAttribute('width', 44); r.setAttribute('height', 22); r.setAttribute('rx', 3);
+    const t = document.createElementNS(NS, 'text');
+    t.setAttribute('x', 22); t.setAttribute('y', 14.5); t.setAttribute('text-anchor', 'middle');
+    t.textContent = event.kind === 'get' ? `GET ${labels[event.row]}` : `obj ${labels[event.row]}`;
+    g.append(r, t);
+    svg.querySelector('#gx1-packets').append(g);
+    return g;
+  }
+
+  let done, trips;
+  function reset() {
+    done = 0; trips = 0;
+    objects.forEach((o, i) => {
+      o.setAttribute('data-state', 'pending');
+      o.querySelector('.label').textContent = '?';
+    });
+    packets.forEach((p) => p.remove());
+    packets.clear();
+  }
+
+  function render(t) {
+    for (const event of events) {
+      const alive = t >= event.start && t < event.end;
+      let p = packets.get(event);
+      if (alive && !p) { p = packet(event); packets.set(event, p); }
+      if (p) p.setAttribute('data-live', alive ? '1' : '0');
+      if (!alive && p && t >= event.end) { p.remove(); packets.delete(event); }
+      if (alive) {
+        const progress = (t - event.start) / (event.end - event.start); // linear: data on a wire
+        const from = event.kind === 'get' ? 152 : 570, to = event.kind === 'get' ? 570 : 152;
+        const x = from + (to - from) * progress;
+        const y = event.kind === 'get' ? rows[event.row] : rows[event.row];
+        p.setAttribute('transform', `translate(${x - 22} ${y - 11})`);
+      }
+      if (event.kind === 'obj' && t >= event.end && objects[event.row].getAttribute('data-state') !== 'visited') {
+        objects[event.row].setAttribute('data-state', 'visited');
+        objects[event.row].querySelector('.label').textContent = labels[event.row].toUpperCase();
+        done += 1; trips += 1;
+      }
+      if (event.kind === 'get' && t >= event.start && objects[event.row].getAttribute('data-state') === 'pending')
+        objects[event.row].setAttribute('data-state', 'active');
+    }
+    svg.querySelector('#gx1-counter').textContent = `objects ${done}/3 · round-trips ${trips}`;
+  }
+
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const freeze = new URLSearchParams(location.search).get('freeze');
+  if (reduced) { reset(); render(DURATION); return; }
+  if (freeze !== null) { reset(); render(Number(freeze)); return; }
+
+  let start = performance.now(), lastCommit = 0, playing = true;
+  reset();
+  new IntersectionObserver(([entry]) => {
+    playing = entry.isIntersecting;
+    if (playing) start = performance.now(); // restart the loop rather than resume mid-air
+  }, { rootMargin: '160px 0px' }).observe(svg);
+
+  (function tick(now) {
+    requestAnimationFrame(tick);
+    if (!playing) return;
+    if (now - lastCommit < 1000 / 24) return; // 24fps commits: the steppy film cadence
+    lastCommit = now;
+    let t = (now - start) % (DURATION + PAUSE);
+    if (t < 50) reset();
+    render(Math.min(t, DURATION));
+  })(performance.now());
+})();
+</script>
+</figure>

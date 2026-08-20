@@ -1,0 +1,82 @@
+<!-- PlanetScale-style example: a router fanning out to three shards, each a primary
+     with two replicas. The snippet is everything inside <figure class="gx2">…</figure>.
+     Demonstrates: dashed-inset boxes, hatch texture on busy components, database
+     cylinders, Manhattan connectors with marching ants (no arrowheads), constant-speed
+     traffic dots, JetBrains Mono caps labels, CSS-var theming. Ambient mode: no controls. -->
+<figure class="gx2" style="max-width:760px;width:100%;margin-inline:auto;margin-block:0">
+<style>
+.gx2 { --bg:#FAFAFA; --fg:#111111; --green:#13862E; --blue:#144EB6; --plumbing:#818181; }
+@media (prefers-color-scheme: dark) { .gx2 { --bg:#111111; --fg:#FAFAFA; --green:#27B648; --blue:#0E73CC; } }
+.gx2 svg { display:block; width:100%; height:auto; background:var(--bg); border-radius:8px;
+  font-family:'JetBrains Mono',ui-monospace,SFMono-Regular,Menlo,monospace; user-select:none; }
+.gx2 .box { fill:transparent; stroke-width:2; }
+.gx2 .inset { stroke-width:2; stroke-dasharray:8 8; fill-opacity:.1; }
+.gx2 .router .box, .gx2 .router .inset { stroke:var(--green); }
+.gx2 .router .inset { fill:var(--green); }
+.gx2 #gx2-hatch line { stroke:var(--green); stroke-width:1; stroke-opacity:.3; }
+/* <use> clones live in a shadow tree that document selectors can't reach, so
+   style cylinders through inherited properties on the group instead */
+.gx2 .cyl { fill:var(--bg); stroke:var(--blue); stroke-width:1.5; }
+.gx2 .label { fill:var(--fg); font-size:24px; font-weight:500; text-anchor:middle; dominant-baseline:middle; letter-spacing:.04em; }
+.gx2 .sublabel { fill:var(--plumbing); font-size:18px; font-weight:500; text-anchor:middle; }
+.gx2 .connector { fill:none; stroke:var(--plumbing); stroke-width:1.5; stroke-dasharray:8 6;
+  stroke-linecap:round; stroke-linejoin:round; animation:gx2-march .9s linear infinite; }
+@keyframes gx2-march { to { stroke-dashoffset:-14; } }
+.gx2 .dot { fill:var(--plumbing); opacity:0; animation:gx2-travel 3.6s linear infinite; }
+.gx2 .dot.d2 { animation-delay:1.2s; } .gx2 .dot.d3 { animation-delay:2.4s; }
+@keyframes gx2-travel {
+  0% { offset-distance:0%; opacity:0; }  4% { opacity:1; }
+  38% { offset-distance:100%; opacity:1; } 42% { offset-distance:100%; opacity:0; }
+  100% { offset-distance:100%; opacity:0; }
+}
+.gx2 .dot { offset-rotate:0deg; }
+.gx2 .r1 { offset-path:path('M 450 16 L 450 244'); }
+.gx2 .r2 { offset-path:path('M 750 16 L 750 244'); }
+.gx2 .r3 { offset-path:path('M 1050 16 L 1050 244'); }
+@media (prefers-reduced-motion: reduce) { .gx2 * { animation:none !important; } .gx2 .dot { display:none; } }
+</style>
+<svg viewBox="0 0 1500 620" role="img"
+     aria-label="Animated diagram of a sharded database: request dots fall from above through a wide hatched ROUTER box and continue along dashed connectors to one of three shards. Each shard is a primary database cylinder replicating down to two replica cylinders, with marching dashes on every connector showing continuous data flow.">
+  <defs>
+    <pattern id="gx2-hatch" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <line class="hl" x1="0" y1="0" x2="0" y2="12"/>
+    </pattern>
+    <g id="gx2-cyl">
+      <path d="M -34 0 L -34 54 Q 0 72 34 54 L 34 0"/>
+      <ellipse cx="0" cy="0" rx="34" ry="9"/>
+      <path d="M -34 18 Q 0 34 34 18" fill="none" stroke-width="0.5"/>
+    </g>
+  </defs>
+
+  <!-- router: outer box + dashed inset + hatch (busy) -->
+  <g class="router">
+    <rect class="box" x="330" y="60" width="840" height="110"/>
+    <rect class="inset" x="338" y="68" width="824" height="94"/>
+    <rect class="hatchfill" x="338" y="68" width="824" height="94" fill="url(#gx2-hatch)" stroke="none"/>
+    <text class="label" x="750" y="116">ROUTER</text>
+  </g>
+
+  <!-- connectors: router → primaries (through-traffic paths), primary → replicas -->
+  <path class="connector" d="M 450 170 L 450 244"/>
+  <path class="connector" d="M 750 170 L 750 244"/>
+  <path class="connector" d="M 1050 170 L 1050 244"/>
+  <path class="connector" d="M 450 330 L 450 380 L 380 380 L 380 424"/>
+  <path class="connector" d="M 450 330 L 450 380 L 520 380 L 520 424"/>
+  <path class="connector" d="M 750 330 L 750 380 L 680 380 L 680 424"/>
+  <path class="connector" d="M 750 330 L 750 380 L 820 380 L 820 424"/>
+  <path class="connector" d="M 1050 330 L 1050 380 L 980 380 L 980 424"/>
+  <path class="connector" d="M 1050 330 L 1050 380 L 1120 380 L 1120 424"/>
+
+  <!-- shards: primary above, two replicas below -->
+  <g class="cyl"><use href="#gx2-cyl" x="450" y="256"/><use href="#gx2-cyl" x="750" y="256"/><use href="#gx2-cyl" x="1050" y="256"/></g>
+  <g class="cyl"><use href="#gx2-cyl" x="380" y="436"/><use href="#gx2-cyl" x="520" y="436"/>
+    <use href="#gx2-cyl" x="680" y="436"/><use href="#gx2-cyl" x="820" y="436"/>
+    <use href="#gx2-cyl" x="980" y="436"/><use href="#gx2-cyl" x="1120" y="436"/></g>
+  <text class="sublabel" x="450" y="566">SHARD 1</text>
+  <text class="sublabel" x="750" y="566">SHARD 2</text>
+  <text class="sublabel" x="1050" y="566">SHARD 3</text>
+
+  <!-- traffic: constant-speed dots falling through the router into each shard -->
+  <circle class="dot d1 r1" r="7"/><circle class="dot d2 r2" r="7"/><circle class="dot d3 r3" r="7"/>
+</svg>
+</figure>

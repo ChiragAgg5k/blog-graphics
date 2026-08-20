@@ -1,0 +1,64 @@
+<!-- Comeau-style example: a spring-easing playground.
+     The snippet is everything inside <figure class="gx4">…</figure>.
+     Demonstrates: HSL token system, soft card with layered shadow, hand-styled toggle
+     switch as the jewelry, CSS transitions doing all animation (JS only flips state),
+     springy overshoot curve, dark-mode token flip, works with JS disabled (default state). -->
+<figure class="gx4" style="max-width:560px;width:100%;margin-inline:auto;margin-block:0">
+<style>
+.gx4 { --primary:hsl(240deg 95% 62%); --secondary:hsl(333deg 100% 45%);
+       --panel:hsl(225deg 25% 95%); --text:hsl(225deg 25% 12%); --muted:hsl(225deg 12% 40%);
+       --thumb:white; --stage:hsl(225deg 22% 90%); --track:hsl(225deg 12% 40% / .35);
+       --shadow-1:hsl(225deg 25% 12% / .1); --shadow-2:hsl(225deg 25% 12% / .08); }
+@media (prefers-color-scheme: dark) {
+  .gx4 { --primary:hsl(240deg 100% 75%); --panel:hsl(210deg 30% 12%);
+         --text:hsl(210deg 10% 90%); --muted:hsl(210deg 10% 60%);
+         --stage:hsl(210deg 30% 8%); --track:hsl(210deg 10% 60% / .35);
+         --shadow-1:hsl(210deg 30% 4% / .4); --shadow-2:hsl(210deg 30% 4% / .3); }
+}
+.gx4 .card { background:var(--panel); border-radius:16px; padding:32px 28px;
+  box-shadow:0 1px 2px var(--shadow-1), 0 4px 12px var(--shadow-2);
+  font-family:ui-sans-serif,system-ui,sans-serif; color:var(--text); }
+.gx4 .stage { position:relative; height:96px; border-radius:12px;
+  background:var(--stage); overflow:hidden; }
+.gx4 .hero { position:absolute; top:24px; left:16px; width:48px; height:48px; border-radius:50%;
+  background:var(--primary);
+  transition:transform 600ms cubic-bezier(.2, 1.4, .3, 1); /* the springy overshoot */ }
+.gx4 .hero::after { content:''; position:absolute; top:12px; left:10px; width:12px; height:6px;
+  border-radius:50%; background:hsl(0deg 0% 100% / .55); } /* a glint of whimsy */
+.gx4[data-on] .hero { transform:translateX(var(--travel, 380px)); }
+.gx4 .row { display:flex; align-items:center; justify-content:space-between; margin-top:24px; }
+.gx4 label { font-size:15px; font-weight:600; cursor:pointer; user-select:none; }
+.gx4 .hint { font-size:13px; color:var(--muted); font-family:ui-monospace,Menlo,monospace; }
+.gx4 .toggle { position:relative; width:52px; height:30px; border:none; border-radius:15px;
+  background:var(--track); cursor:pointer; padding:0;
+  transition:background 350ms cubic-bezier(0.41, 0.1, 0.13, 1); }
+.gx4[data-on] .toggle { background:var(--primary); }
+.gx4 .toggle::before { content:''; position:absolute; top:3px; left:3px; width:24px; height:24px;
+  border-radius:50%; background:var(--thumb); box-shadow:0 1px 3px var(--shadow-1);
+  transition:transform 350ms cubic-bezier(.2, 1.4, .3, 1); }
+.gx4[data-on] .toggle::before { transform:translateX(22px); }
+.gx4 .toggle:active::before { scale:.92; }
+@media (prefers-reduced-motion: reduce) { .gx4 * { transition-duration:.01s !important; } }
+</style>
+<div class="card">
+  <div class="stage"><div class="hero" role="img" aria-label="A ball that springs across the stage when the toggle flips"></div></div>
+  <div class="row">
+    <label for="gx4-toggle">Send it across</label>
+    <span class="hint">cubic-bezier(.2, 1.4, .3, 1)</span>
+    <button class="toggle" id="gx4-toggle" role="switch" aria-checked="false" aria-label="Send the ball across"></button>
+  </div>
+</div>
+<script>
+(() => {
+  const root = document.currentScript.closest('figure');
+  const stage = root.querySelector('.stage');
+  const setTravel = () => root.style.setProperty('--travel', `${stage.clientWidth - 80}px`);
+  setTravel();
+  addEventListener('resize', setTravel);
+  root.querySelector('.toggle').addEventListener('click', () => {
+    const on = root.toggleAttribute('data-on');
+    root.querySelector('.toggle').setAttribute('aria-checked', on);
+  });
+})();
+</script>
+</figure>

@@ -1,0 +1,9 @@
+{
+    "name": "blog-graphics",
+    "version": "0.1.0",
+    "description": "Skills for creating stunning animated graphics for technical blog posts, modeled on the design ideologies of Cursor, PlanetScale, samwho.dev, Josh Comeau, and others.",
+    "author": {
+        "name": "Chirag Aggarwal",
+        "email": "chirag@appwrite.io"
+    }
+}

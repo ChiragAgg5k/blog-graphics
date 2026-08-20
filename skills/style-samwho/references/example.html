@@ -1,0 +1,107 @@
+<!-- samwho-style example: a round-robin load balancer as a toy simulation.
+     The snippet is everything inside <figure class="gx3">…</figure>.
+     Demonstrates: Okabe-Ito palette, warm paper background, rAF simulation loop,
+     circles-as-requests flowing into servers, per-server counters, one rate slider.
+     This style stays light even on dark pages (it owns its background). -->
+<figure class="gx3" style="max-width:680px;width:100%;margin-inline:auto;margin-block:0">
+<style>
+.gx3 { --orange:#E69F00; --sky:#56B4E9; --green:#009E73; --vermillion:#D55E00;
+       --paper:#FBF9F6; --ink:#2D2A26; --track:#D8D3CC; }
+.gx3 svg { display:block; width:100%; height:auto; }
+.gx3 .server { fill:var(--paper); stroke:var(--ink); stroke-width:1.5; rx:8; }
+.gx3 .slot { fill:none; stroke:var(--track); stroke-width:1.5; }
+.gx3 .name { fill:var(--ink); font:600 13px ui-sans-serif,system-ui,sans-serif; text-anchor:middle; }
+.gx3 .count { fill:var(--ink); font:12px ui-monospace,Menlo,monospace; text-anchor:middle; }
+.gx3 .controls { display:flex; gap:10px; align-items:center; justify-content:center;
+  font:13px ui-sans-serif,system-ui,sans-serif; color:#2D2A26; background:#FBF9F6;
+  border:1.5px solid #D8D3CC; border-radius:0 0 12px 12px; padding:8px 16px; margin-top:-1px; }
+.gx3 input[type=range] { accent-color:#E69F00; width:160px; }
+</style>
+<svg viewBox="0 0 680 300" role="img"
+     aria-label="A load balancer simulation: colored request circles fall from a spawner at the top and are routed round-robin to three servers, whose counters tick up as each request lands. A slider controls the request rate.">
+  <rect width="680" height="300" rx="12" fill="#FBF9F6" stroke="#D8D3CC" stroke-width="1.5"/>
+  <rect x="310" y="24" width="60" height="26" rx="8" fill="none" stroke="#2D2A26" stroke-width="1.5"/>
+  <text class="name" x="340" y="42" style="font-size:11px">balancer</text>
+  <g id="gx3-servers"></g>
+  <g id="gx3-balls"></g>
+</svg>
+<div class="controls">
+  <label for="gx3-rate">requests/sec</label>
+  <input id="gx3-rate" type="range" min="1" max="12" value="4">
+  <output id="gx3-rate-out">4</output>
+</div>
+<script>
+(() => {
+  const root = document.currentScript.closest('figure');
+  const svg = root.querySelector('svg');
+  const NS = 'http://www.w3.org/2000/svg';
+  const COLORS = ['#E69F00', '#56B4E9', '#009E73', '#CC79A7', '#0072B2'];
+  const SERVERS = [{ x: 140 }, { x: 340 }, { x: 540 }];
+  const FLOOR = 224;
+
+  SERVERS.forEach((server, i) => {
+    const g = document.createElementNS(NS, 'g');
+    g.innerHTML = `<rect class="server" x="${server.x - 45}" y="${FLOOR}" width="90" height="40" rx="8"/>
+      <circle cx="${server.x + 34}" cy="${FLOOR + 11}" r="4" fill="#009E73"/>
+      <text class="name" x="${server.x}" y="${FLOOR + 25}">server ${i + 1}</text>
+      <text class="count" id="gx3-count-${i}" x="${server.x}" y="${FLOOR + 58}">0</text>`;
+    svg.querySelector('#gx3-servers').append(g);
+    server.count = 0;
+    server.flash = 0;
+  });
+
+  const balls = [];
+  let next = 0, spawnAt = 0, rate = 4;
+  const slider = root.querySelector('#gx3-rate');
+  slider.addEventListener('input', () => {
+    rate = Number(slider.value);
+    root.querySelector('#gx3-rate-out').textContent = rate;
+  });
+
+  function spawn(now) {
+    const target = SERVERS[next % 3];
+    const el = document.createElementNS(NS, 'circle');
+    el.setAttribute('r', 9);
+    el.setAttribute('fill', COLORS[next % COLORS.length]);
+    svg.querySelector('#gx3-balls').append(el);
+    balls.push({ el, t: 0, x0: 340, y0: 56, x1: target.x, y1: FLOOR - 10, target });
+    next += 1;
+  }
+
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduced) { // freeze-frame: pre-filled counters, no loop
+    SERVERS.forEach((server, i) => { svg.querySelector(`#gx3-count-${i}`).textContent = 14 + i; });
+    root.querySelector('.controls').style.display = 'none';
+    return;
+  }
+
+  let playing = true;
+  new IntersectionObserver(([entry]) => { playing = entry.isIntersecting; }, { rootMargin: '100px' }).observe(svg);
+
+  let last = performance.now();
+  (function tick(now) {
+    requestAnimationFrame(tick);
+    const dt = Math.min(now - last, 100); last = now;
+    if (!playing) return;
+    spawnAt -= dt;
+    if (spawnAt <= 0) { spawn(now); spawnAt = 1000 / rate; }
+    for (let i = balls.length - 1; i >= 0; i--) {
+      const ball = balls[i];
+      ball.t += dt / 900; // constant travel time; velocity, not easing
+      if (ball.t >= 1) {
+        ball.target.count += 1;
+        const index = SERVERS.indexOf(ball.target);
+        svg.querySelector(`#gx3-count-${index}`).textContent = ball.target.count;
+        ball.el.remove(); balls.splice(i, 1);
+        continue;
+      }
+      // straight down from balancer, then fan out along a gentle quadratic
+      const mx = (ball.x0 + ball.x1) / 2, my = 120;
+      const t = ball.t, u = 1 - t;
+      ball.el.setAttribute('cx', u * u * ball.x0 + 2 * u * t * mx + t * t * ball.x1);
+      ball.el.setAttribute('cy', u * u * ball.y0 + 2 * u * t * my + t * t * ball.y1);
+    }
+  })(last);
+})();
+</script>
+</figure>

@@ -1,0 +1,81 @@
+<!-- Ciechanowski-lite example: two meshing gears scrubbed by a slider.
+     The snippet is everything inside <figure class="gx5">…</figure>.
+     Demonstrates: slider-as-primary-verb (everything is a pure function of --t),
+     mechanically correct ratios (12-tooth driver turns the 24-tooth wheel at half
+     speed, opposite direction), semantic part tints, prose color-linking classes,
+     correct transform pivots. No autoplay. -->
+<figure class="gx5" style="max-width:560px;width:100%;margin-inline:auto;margin-block:0">
+<style>
+.gx5 { --paper:#FFFFFF; --metal:#B8BCC2; --metal-dark:#7A7F87; --ink:#333333;
+       --part-blue:#4A90D9; --part-yellow:#E8B93E; }
+.gx5 .frame { background:var(--paper); border:1px solid #E5E5E5; border-radius:10px; padding:24px 24px 12px; }
+.gx5 svg { display:block; width:100%; height:auto; }
+.gx5 .gear { transform-box:fill-box; transform-origin:center; }
+/* the whole figure is a pure function of --t (0..1) */
+.gx5 .driver { transform:rotate(calc(var(--t, 0) * 360deg)); }
+.gx5 .driven { transform:rotate(calc(var(--t, 0) * -180deg + 15deg)); } /* 12:24 teeth → half speed, reversed */
+.gx5 .driver .body { fill:var(--part-blue); stroke:#2E6DAD; stroke-width:1.5; }
+.gx5 .driven .body { fill:var(--part-yellow); stroke:#B8891F; stroke-width:1.5; }
+.gx5 .hub { fill:var(--paper); stroke:var(--metal-dark); stroke-width:1.5; }
+.gx5 .marker { fill:var(--paper); stroke:none; opacity:.85; }
+.gx5 .caption { font:13px ui-sans-serif,system-ui,sans-serif; color:var(--ink); text-align:center; margin:8px 0 4px; }
+.gx5 .part-blue { color:var(--part-blue); font-weight:600; }
+.gx5 .part-yellow { color:#B8891F; font-weight:600; }
+.gx5 .gutter { display:flex; justify-content:center; padding:4px 0 8px; }
+.gx5 input[type=range] { width:70%; accent-color:var(--metal-dark); }
+</style>
+<div class="frame">
+  <svg viewBox="0 0 512 240" role="img"
+       aria-label="Two meshing gears. Dragging the slider rotates the small blue 12-tooth driver gear; the large yellow 24-tooth gear turns at exactly half the speed in the opposite direction.">
+    <g class="gear driver" id="gx5-driver" data-teeth="12" data-radius="52" data-cx="160" data-cy="120"></g>
+    <g class="gear driven" id="gx5-driven" data-teeth="24" data-radius="104" data-cx="330" data-cy="120"></g>
+  </svg>
+  <p class="caption">The <span class="part-blue">driver</span> turns the
+    <span class="part-yellow">wheel</span> at half speed &#8212; twice the teeth, half the rate.</p>
+  <div class="gutter">
+    <input id="gx5-t" type="range" min="0" max="1" step="0.001" value="0" aria-label="Rotate the driver gear">
+  </div>
+</div>
+<script>
+(() => {
+  const root = document.currentScript.closest('figure');
+  const NS = 'http://www.w3.org/2000/svg';
+
+  // Build each gear: ring body with trapezoidal teeth as one path, plus a hub.
+  for (const gear of root.querySelectorAll('.gear')) {
+    const teeth = Number(gear.dataset.teeth), radius = Number(gear.dataset.radius);
+    const cx = Number(gear.dataset.cx), cy = Number(gear.dataset.cy);
+    const inner = radius - 10, tip = radius + 8;
+    const step = (2 * Math.PI) / teeth;
+    const point = (r, a) => `${(cx + r * Math.cos(a)).toFixed(2)} ${(cy + r * Math.sin(a)).toFixed(2)}`;
+    let d = `M ${point(inner, 0)} `;
+    for (let i = 0; i < teeth; i++) {
+      const a = i * step;
+      d += `A ${inner} ${inner} 0 0 1 ${point(inner, a + step * 0.25)} `
+         + `L ${point(tip, a + step * 0.35)} L ${point(tip, a + step * 0.62)} `
+         + `L ${point(inner, a + step * 0.72)} `
+         + `A ${inner} ${inner} 0 0 1 ${point(inner, a + step)} `;
+    }
+    const body = document.createElementNS(NS, 'path');
+    body.setAttribute('class', 'body');
+    body.setAttribute('d', d + 'Z');
+    body.setAttribute('fill-rule', 'evenodd');
+    const hub = document.createElementNS(NS, 'circle');
+    hub.setAttribute('class', 'hub');
+    hub.setAttribute('cx', cx); hub.setAttribute('cy', cy); hub.setAttribute('r', radius * 0.3);
+    // reference dot: gears are rotationally symmetric, so without a marker
+    // the rotation would be invisible
+    const marker = document.createElementNS(NS, 'circle');
+    marker.setAttribute('class', 'marker');
+    marker.setAttribute('cx', cx + radius * 0.62); marker.setAttribute('cy', cy);
+    marker.setAttribute('r', 5);
+    gear.append(body, hub, marker);
+  }
+
+  // The entire wiring: slider writes --t, CSS does the rest.
+  root.querySelector('#gx5-t').addEventListener('input', (event) => {
+    root.style.setProperty('--t', event.target.value);
+  });
+})();
+</script>
+</figure>
