@@ -1,6 +1,8 @@
 # blog-graphics
 
-Claude Code skills for creating stunning animated graphics for technical blog posts — modeled on the design ideologies of engineering blogs that do this exceptionally well, reverse-engineered from their actual markup, CSS, and animation code.
+[![skills.sh](https://skills.sh/b/ChiragAgg5k/blog-graphics)](https://skills.sh/ChiragAgg5k/blog-graphics)
+
+Agent skills for creating stunning animated graphics for technical blog posts — modeled on the design ideologies of engineering blogs that do this exceptionally well, reverse-engineered from their actual markup, CSS, and animation code.
 
 Every graphic the skills produce is a **single self-contained HTML/SVG snippet**: no build step, no external libraries, no network requests, light/dark aware, `prefers-reduced-motion` compliant, and screenshot-verified before delivery.
 
@@ -42,7 +44,17 @@ The core [`blog-graphics`](skills/blog-graphics/SKILL.md) skill is the entry poi
 
 ## Install
 
-As a Claude Code plugin (from a marketplace containing this repo), or copy the `skills/` directories into a project's `.claude/skills/`. Then:
+Via [skills.sh](https://skills.sh) — works with Claude Code, Cursor, Codex, OpenCode, and 70+ other agents:
+
+```bash
+# all six skills
+npx skills add ChiragAgg5k/blog-graphics
+
+# or just the styles you want (the core blog-graphics skill is recommended alongside any style)
+npx skills add ChiragAgg5k/blog-graphics --skill blog-graphics --skill style-planetscale
+```
+
+Alternatively: as a Claude Code plugin (from a marketplace containing this repo), or copy the `skills/` directories into a project's `.claude/skills/`. Then:
 
 ```
 /blog-graphic a diagram showing how our WAL ships segments to three replicas, PlanetScale style

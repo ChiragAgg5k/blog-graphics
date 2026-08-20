@@ -27,7 +27,7 @@ If the user hasn't chosen, present this table and let them pick a style to **cop
 | `style-comeau` | Whimsical interactive playgrounds — springy motion, sliders, delight-first | Frontend/CSS/animation topics, tutorial posts |
 | `style-ciechanowski` | Museum-grade continuous simulations — physical realism, scrubbable | Physics-adjacent or geometric concepts (advanced; budget accordingly) |
 
-Once chosen, **read that style skill fully** and obey its palette, typography, line weights, and motion rules exactly. Half-applied styles look AI-generated; fully-applied ones look designed. For "remix", pick one style as the base for layout/motion and change only what the user asked to change.
+Once chosen, **read that style skill fully** and obey its palette, typography, line weights, and motion rules exactly. Style skills live as sibling skills (installed alongside this one, or under `skills/` in this repo); if the chosen one isn't installed, fetch its `SKILL.md` and `references/example.html` from `github.com/ChiragAgg5k/blog-graphics`. Half-applied styles look AI-generated; fully-applied ones look designed. For "remix", pick one style as the base for layout/motion and change only what the user asked to change.
 
 ### 3. Read the technique references
 
