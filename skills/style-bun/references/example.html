@@ -1,0 +1,140 @@
+<!-- Bun-style example: a replayable terminal plus a benchmark progress-card grid.
+     The snippet is everything inside <figure class="gx6">…</figure>.
+     Demonstrates: token system with transparent-white dark layering, line-timeline
+     terminal playback (not typing), colored process prefixes, count-up counter with
+     pink glow, cream-gradient progress fills with "before" tick marks, replay button,
+     IntersectionObserver trigger, reduced-motion final-state fallback. -->
+<figure class="gx6" style="max-width:680px;width:100%;margin-inline:auto;margin-block:0">
+<style>
+.gx6 { --surface:#ffffff; --subtle:#f6f6f6; --line:#e2e2e2; --fg:#0a0a0a;
+  --fg-muted:#525252; --fg-faint:#707070; --accent:#ff1f8f; --code-bg:#f6f6f6;
+  --success:#009150; --warning:#c27803; --track:#e2e2e2;
+  --fill:linear-gradient(90deg,#ff1f8f,#ff1f8f); --fill-glow:none; --count-glow:none;
+  --p1:#be185d; --p2:#0369a1; --p3:#b45309; }
+@media (prefers-color-scheme: dark) { .gx6 {
+  --surface:#0c0b0a; --subtle:#171316; --line:rgba(255,255,255,.08); --fg:#eaeae8;
+  --fg-muted:#a8a8a5; --fg-faint:#808080; --accent:#ff2e97; --code-bg:#0d0d0d;
+  --success:#28dc82; --warning:#f5b43c; --track:rgba(255,255,255,.08);
+  --fill:linear-gradient(90deg,#fdf8ec,#efe2c7); --fill-glow:0 0 12px rgba(251,242,225,.25);
+  --count-glow:0 0 24px rgba(251,112,186,.35);
+  --p1:#f472b6; --p2:#38bdf8; --p3:#fbbf24;
+} }
+.gx6 { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; color:var(--fg); }
+.gx6 .card { border:1px solid var(--line); border-radius:16px; background:var(--surface); overflow:hidden; }
+.gx6 .term-head { display:flex; align-items:center; gap:8px; padding:8px 14px;
+  border-bottom:1px solid var(--line); background:var(--subtle); font-size:12.5px; }
+.gx6 .term-head .prompt { color:var(--accent); font-weight:700; }
+.gx6 .replay { margin-left:auto; border:1px solid var(--line); border-radius:8px;
+  background:none; color:var(--fg-muted); font:inherit; font-size:11px; padding:3px 10px; cursor:pointer; }
+.gx6 .replay:hover { background:rgba(128,128,128,.08); }
+.gx6 .term-body { padding:12px 16px; background:var(--code-bg); font-size:12.5px;
+  line-height:1.55; min-height:9.4em; }
+.gx6 .term-body div { white-space:pre; opacity:0; transform:translateY(2px);
+  transition:opacity 80ms ease-out, transform 80ms ease-out; }
+.gx6 .term-body div.shown { opacity:1; transform:none; }
+.gx6 .dim { color:var(--fg-faint); } .gx6 .ok { color:var(--success); } .gx6 .val { color:var(--warning); }
+.gx6 .pf1 { color:var(--p1); } .gx6 .pf2 { color:var(--p2); } .gx6 .pf3 { color:var(--p3); }
+.gx6 .bench { margin-top:12px; padding:16px; }
+.gx6 .bench-head { display:flex; align-items:baseline; justify-content:space-between; margin-bottom:12px; }
+.gx6 .micro { font-size:10px; text-transform:uppercase; letter-spacing:.14em; color:var(--fg-faint); }
+.gx6 .count { font-size:26px; font-weight:700; color:var(--accent);
+  font-variant-numeric:tabular-nums; text-shadow:var(--count-glow); }
+.gx6 .row { display:grid; grid-template-columns:88px 1fr 110px; gap:12px; align-items:center; padding:7px 0; }
+.gx6 .row .name { font-size:12px; }
+.gx6 .trackbar { position:relative; height:6px; border-radius:999px; background:var(--track); overflow:hidden; }
+.gx6 .fill { position:absolute; inset:0 auto 0 0; border-radius:999px; background:var(--fill);
+  box-shadow:var(--fill-glow); transform:scaleX(var(--sx,1)); transform-origin:left;
+  transition:transform 700ms cubic-bezier(.2,.7,.2,1); will-change:transform; }
+.gx6 .tick { position:absolute; top:0; bottom:0; width:1px; background:rgba(128,128,128,.5); }
+.gx6 .nums { font-size:11px; text-align:right; color:var(--fg-muted); font-variant-numeric:tabular-nums; }
+.gx6 .nums .delta { color:var(--accent); }
+.gx6[data-rewind] * { transition:none !important; }
+</style>
+<div class="card">
+  <div class="term-head"><span class="prompt">&#10095;</span><span>bun test --parallel</span>
+    <button class="replay" id="gx6-replay">&#8635; replay</button></div>
+  <div class="term-body" id="gx6-term" role="img" aria-label="A terminal replaying bun test running three suites in parallel, followed by a benchmark grid where each module's passing-test bar grows from its previous mark while a counter counts up 133 newly passing tests."></div>
+</div>
+<div class="card bench">
+  <div class="bench-head"><span class="micro">node.js compat &#183; passing tests</span>
+    <span class="count" id="gx6-count">+0</span></div>
+  <div id="gx6-rows"></div>
+</div>
+<script>
+(() => {
+  const root = document.currentScript.closest('figure');
+  const term = root.querySelector('#gx6-term');
+  const LINES = [
+    { t: 0,    h: '<span class="pf1">fs      |</span> <span class="dim">$ bun test test/js/node/fs</span>' },
+    { t: 60,   h: '<span class="pf2">http    |</span> <span class="dim">$ bun test test/js/node/http</span>' },
+    { t: 120,  h: '<span class="pf3">crypto  |</span> <span class="dim">$ bun test test/js/node/crypto</span>' },
+    { t: 900,  h: '<span class="pf2">http    |</span> 214 pass, 3 skip <span class="val">412ms</span>' },
+    { t: 1400, h: '<span class="pf1">fs      |</span> 349 pass, 9 skip <span class="val">688ms</span>' },
+    { t: 1750, h: '<span class="pf3">crypto  |</span> 187 pass, 2 skip <span class="val">903ms</span>' },
+    { t: 2100, h: '<span class="ok">Done in 1.02s — 750 pass across 3 suites</span>' },
+  ];
+  term.innerHTML = LINES.map((line) => `<div>${line.h}</div>`).join('');
+  const lineEls = [...term.children];
+
+  const MODULES = [
+    { name: 'node:fs', before: 291, after: 349, total: 358 },
+    { name: 'node:http', before: 178, after: 214, total: 226 },
+    { name: 'node:crypto', before: 148, after: 187, total: 195 },
+  ];
+  const DELTA = MODULES.reduce((sum, m) => sum + m.after - m.before, 0);
+  root.querySelector('#gx6-rows').innerHTML = MODULES.map((m, i) => `
+    <div class="row">
+      <span class="name">${m.name}</span>
+      <div class="trackbar">
+        <div class="fill" id="gx6-fill-${i}" style="width:${(m.after / m.total * 100).toFixed(2)}%"></div>
+        <div class="tick" style="left:${(m.before / m.total * 100).toFixed(2)}%"></div>
+      </div>
+      <span class="nums"><span id="gx6-n-${i}">${m.after}</span> / ${m.total}
+        <span class="delta">+${m.after - m.before}</span></span>
+    </div>`).join('');
+
+  const counter = root.querySelector('#gx6-count');
+  let timers = [], raf = 0;
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function finalState() {
+    lineEls.forEach((el) => el.classList.add('shown'));
+    counter.textContent = `+${DELTA}`;
+  }
+
+  function play() {
+    timers.forEach(clearTimeout); timers = []; cancelAnimationFrame(raf);
+    root.setAttribute('data-rewind', '');
+    lineEls.forEach((el) => el.classList.remove('shown'));
+    MODULES.forEach((m, i) => {
+      const fill = root.querySelector(`#gx6-fill-${i}`);
+      fill.style.setProperty('--sx', (m.before / m.after).toFixed(4));
+      root.querySelector(`#gx6-n-${i}`).textContent = m.before;
+    });
+    counter.textContent = '+0';
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      root.removeAttribute('data-rewind');
+      LINES.forEach((line, i) =>
+        timers.push(setTimeout(() => lineEls[i].classList.add('shown'), line.t)));
+      MODULES.forEach((m, i) => timers.push(setTimeout(() => {
+        root.querySelector(`#gx6-fill-${i}`).style.setProperty('--sx', 1);
+        root.querySelector(`#gx6-n-${i}`).textContent = m.after;
+      }, 2300 + i * 350)));
+      const start = performance.now();
+      timers.push(setTimeout(() => (function step(now) {
+        const t = Math.min((now - start - 2300) / 1800, 1);
+        counter.textContent = `+${Math.round(DELTA * (1 - (1 - Math.max(t, 0)) ** 3))}`;
+        if (t < 1) raf = requestAnimationFrame(step);
+      })(performance.now()), 2300));
+    }));
+  }
+
+  if (reduced) { finalState(); return; }
+  root.querySelector('#gx6-replay').addEventListener('click', play);
+  const observer = new IntersectionObserver(([entry]) => {
+    if (entry.isIntersecting) { play(); observer.disconnect(); }
+  }, { threshold: 0.2 });
+  observer.observe(root);
+})();
+</script>
+</figure>

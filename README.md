@@ -1,6 +1,6 @@
 # blog-graphics
 
-[![skills.sh](https://skills.sh/b/ChiragAgg5k/blog-graphics)](https://skills.sh/ChiragAgg5k/blog-graphics)
+[![skills.sh](https://img.shields.io/badge/skills.sh-npx%20skills%20add%20ChiragAgg5k%2Fblog--graphics-ff1f8f)](https://www.skills.sh/ChiragAgg5k/blog-graphics)
 
 Agent skills for creating stunning animated graphics for technical blog posts — modeled on the design ideologies of engineering blogs that do this exceptionally well, reverse-engineered from their actual markup, CSS, and animation code.
 
@@ -18,9 +18,13 @@ Recordings of each style's bundled `references/example.html` (the interactive on
 |---|---|
 | ![samwho-style example](assets/samwho.gif) | ![Comeau-style example](assets/comeau.gif) |
 
-| `style-ciechanowski` — slider-scrubbed meshing gears | |
+| `style-ciechanowski` — slider-scrubbed meshing gears | `style-bun` — replayable terminal + benchmark cards |
 |---|---|
-| ![Ciechanowski-style example](assets/gears.gif) | |
+| ![Ciechanowski-style example](assets/gears.gif) | ![Bun-style example](assets/bun.gif) |
+
+| `style-loggingsucks` — the sampling trap, reader-driven | |
+|---|---|
+| ![loggingsucks-style example](assets/loggingsucks.gif) | |
 
 | Skill | Based on | Ideology | Best for |
 |---|---|---|---|
@@ -29,6 +33,8 @@ Recordings of each style's bundled `references/example.html` (the interactive on
 | [`style-samwho`](skills/style-samwho/SKILL.md) | [samwho.dev](https://samwho.dev/load-balancing/) | Playful flat simulations in the Okabe-Ito colorblind-safe palette; the concept becomes a toy that runs forever | Algorithms, queues, load balancing |
 | [`style-comeau`](skills/style-comeau/SKILL.md) | [joshwcomeau.com](https://www.joshwcomeau.com/) | Whimsical playgrounds on strict HSL design tokens; CSS transitions animate, JS only flips state | Frontend/CSS topics, tutorials |
 | [`style-ciechanowski`](skills/style-ciechanowski/SKILL.md) | [ciechanow.ski](https://ciechanow.ski/mechanical-watch/) | "Lite" adaptation: slider-scrubbed mechanisms with mechanically correct ratios, prose color-linked to parts | Geometric/mechanical/continuous processes |
+| [`style-bun`](skills/style-bun/SKILL.md) | [bun.com/blog](https://bun.com/blog/bun-v1.4) | Dark dev-tool receipts — replayable line-timeline terminals, glowing benchmark progress cards, count-up counters | Release notes, benchmarks, CLI/performance stories |
+| [`style-loggingsucks`](skills/style-loggingsucks/SKILL.md) | [loggingsucks.com](https://loggingsucks.com/) | Rigged interactive toys with a voice — the reader acts, and the punchline is computed from their own action | Opinionated essays, teach-by-playing widgets |
 
 Each style skill carries the exact palette (hex values pulled from the live sites), typography, line weights, motion grammar, a step-by-step recipe, and a complete verified example in `references/example.html`. Users can ask to **copy a style exactly** or use one as a **remix base**.
 
@@ -38,7 +44,7 @@ The core [`blog-graphics`](skills/blog-graphics/SKILL.md) skill is the entry poi
 
 1. **One mechanism per graphic** — a written "This graphic shows ___ by animating ___" sentence before any code.
 2. **Pick a style and commit fully** — half-applied styles look AI-generated; fully-applied ones look designed.
-3. **Compose from known recipes** — `references/animation-techniques.md` covers flowing dashes, draw-on reveals, `offset-path` packets, single-timeline staged sequences, steppers, sliders, and the `transform-box` gotcha that breaks most AI-generated SVG.
+3. **Compose from known recipes** — `references/animation-techniques.md` covers flowing dashes, draw-on reveals, `offset-path` packets, single-timeline staged sequences, and the `transform-box` gotcha that breaks most AI-generated SVG. `references/interaction-patterns.md` covers making graphics playable: the act → picture/number/judgment loop, streams, regenerating sliders, rigged inputs, steppers, dot fields, and progressive reveal.
 4. **Storyboard in text, build, then verify with screenshots** — `scripts/screenshot.mjs` captures the animation at multiple timeline points in light and dark; frames must differ and each must be individually legible.
 5. **Deliver per platform** — `references/embedding.md` covers MDX, Hugo/Jekyll, Ghost/WordPress, and GIF/MP4 fallbacks for platforms that strip HTML.
 

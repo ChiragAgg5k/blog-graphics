@@ -1,0 +1,125 @@
+<!-- loggingsucks-style example: "The Sampling Trap" — a dot field + slider widget.
+     The snippet is everything inside <figure class="gx7">…</figure>.
+     Demonstrates: dark terminal chrome with gray ghost dots, the three-font contract,
+     opacity-ladder text, a slider that regenerates the picture on every input, a
+     random-vs-tail toggle, big number + computed judgment sentence, progressive reveal
+     of the takeaway callout, and hyper-plausible fake stats. Owns its dark background. -->
+<figure class="gx7" style="max-width:680px;width:100%;margin-inline:auto;margin-block:0">
+<style>
+.gx7 { --blue:#60a5fa; --yellow:#fbbf24; --err:rgba(248,113,113,.9); }
+.gx7 .widget { background:#0a0a0a; border:1px solid rgba(255,255,255,.08); border-radius:8px;
+  overflow:hidden; font-family:Inter,ui-sans-serif,system-ui,sans-serif; color:rgba(255,255,255,.7); }
+.gx7 .chrome { display:flex; align-items:center; gap:6px; padding:10px 14px;
+  background:#111; border-bottom:1px solid rgba(255,255,255,.08); }
+.gx7 .chrome i { width:10px; height:10px; border-radius:50%; background:#6b7280; opacity:.6; }
+.gx7 .chrome span { margin-left:8px; font-family:ui-monospace,Menlo,monospace; font-size:11px;
+  text-transform:uppercase; letter-spacing:.15em; color:rgba(255,255,255,.4); }
+.gx7 h3 { font-family:'Instrument Serif',Georgia,serif; font-weight:400; font-size:24px;
+  color:#f5f5f5; margin:18px 18px 4px; }
+.gx7 .sub { margin:0 18px 14px; font-size:13.5px; color:rgba(255,255,255,.5); }
+.gx7 .dots { display:flex; flex-wrap:wrap; gap:3px; padding:0 18px; }
+.gx7 .dots i { width:6px; height:6px; border-radius:50%; background:rgba(255,255,255,.25);
+  transition:opacity .3s ease-out; }
+.gx7 .dots i.slow { background:var(--yellow); } .gx7 .dots i.err { background:var(--err); }
+.gx7 .dots i.dropped { opacity:.12; }
+.gx7 .controls { display:flex; gap:14px; align-items:center; padding:16px 18px 4px; flex-wrap:wrap; }
+.gx7 .controls label { font-size:12px; text-transform:uppercase; letter-spacing:.12em;
+  color:rgba(255,255,255,.4); }
+.gx7 input[type=range] { flex:1; min-width:140px; accent-color:#f5f5f5; }
+.gx7 .mode { display:flex; gap:0; border:1px solid rgba(255,255,255,.15); border-radius:6px; overflow:hidden; }
+.gx7 .mode button { background:none; border:none; color:rgba(255,255,255,.5); font:12px Inter,sans-serif;
+  padding:5px 12px; cursor:pointer; }
+.gx7 .mode button.on { background:#f5f5f5; color:#0a0a0a; font-weight:600; }
+.gx7 .stats { display:flex; gap:26px; align-items:baseline; padding:10px 18px 0; }
+.gx7 .stats b { font-size:2rem; font-weight:700; color:#f5f5f5; font-variant-numeric:tabular-nums; }
+.gx7 .stats small { display:block; font-size:11px; text-transform:uppercase; letter-spacing:.12em;
+  color:rgba(255,255,255,.4); }
+.gx7 .stats .kept-err b { color:var(--err); }
+.gx7 .judgment { margin:10px 18px 0; font-size:14px; font-style:italic; color:rgba(255,255,255,.55); min-height:2.6em; }
+.gx7 .callout { display:none; margin:12px 18px 18px; padding:12px 14px; font-size:13.5px;
+  background:rgba(96,165,250,.05); border-left:2px solid var(--blue); color:rgba(255,255,255,.7);
+  animation:gx7-slide .3s ease-out; }
+.gx7 .callout b { color:#f5f5f5; }
+@keyframes gx7-slide { from { opacity:0; transform:translateY(-4px); } }
+.gx7 .pad { height:18px; }
+</style>
+<div class="widget" role="group" aria-label="Interactive sampling demo: a field of one thousand request dots. A slider sets the sample rate and a toggle switches between random and tail-based sampling; dropped requests fade out and the statistics recompute live.">
+  <div class="chrome"><i></i><i></i><i></i><span>sampling-trap</span></div>
+  <h3>Drop logs, keep regrets</h3>
+  <p class="sub">1,000 requests: gray = success, <span style="color:var(--yellow)">yellow = slow</span>,
+    <span style="color:var(--err)">red = error</span>. Now "save money".</p>
+  <div class="dots" id="gx7-dots"></div>
+  <div class="controls">
+    <label>sample rate <b id="gx7-rate" style="color:#f5f5f5">100%</b></label>
+    <input type="range" id="gx7-slider" min="1" max="100" value="100" aria-label="Sample rate percent">
+    <div class="mode">
+      <button id="gx7-random" class="on">Random</button><button id="gx7-tail">Tail</button>
+    </div>
+  </div>
+  <div class="stats">
+    <span><b id="gx7-kept">1000</b><small>events kept</small></span>
+    <span class="kept-err"><b id="gx7-errs">50</b><small>errors kept</small></span>
+  </div>
+  <p class="judgment" id="gx7-judge"></p>
+  <div class="callout" id="gx7-callout"><b>Tail sampling keeps 100% of your errors</b> and drops only the
+    boring successes. Same bill, none of the regret.</div>
+  <div class="pad"></div>
+</div>
+<script>
+(() => {
+  const root = document.currentScript.closest('figure');
+  const N = 1000;
+  // deterministic hash per index (no Math.random, so re-renders are stable) that
+  // still *looks* random — plain modulo patterns read as visible stripes
+  const hash = (i, salt) => Math.floor(Math.abs(Math.sin(i * 127.1 + salt) * 43758.5453) % 100);
+  // population: ~85% success, ~10% slow, ~5% error
+  const kinds = [];
+  for (let i = 0; i < N; i++) {
+    const roll = hash(i, 1);
+    kinds.push(roll < 5 ? 'err' : roll < 15 ? 'slow' : 'ok');
+  }
+  const dotsEl = root.querySelector('#gx7-dots');
+  dotsEl.innerHTML = kinds.map((k) => `<i class="${k === 'ok' ? '' : k}"></i>`).join('');
+  const dots = [...dotsEl.children];
+
+  let rate = 100, mode = 'random', touchedTail = false;
+  const judge = root.querySelector('#gx7-judge');
+
+  function update() {
+    let kept = 0, errsKept = 0;
+    dots.forEach((dot, i) => {
+      const isErr = kinds[i] === 'err';
+      // stable pseudo-random per dot so dragging the slider feels continuous
+      const roll = hash(i, 2);
+      const keep = mode === 'tail' ? (isErr || kinds[i] === 'slow' || roll < rate)
+                                   : roll < rate;
+      dot.classList.toggle('dropped', !keep);
+      if (keep) { kept++; if (isErr) errsKept++; }
+    });
+    root.querySelector('#gx7-rate').textContent = `${rate}%`;
+    root.querySelector('#gx7-kept').textContent = kept.toLocaleString();
+    root.querySelector('#gx7-errs').textContent = errsKept;
+    const missChance = 100 - rate;
+    judge.textContent =
+      rate === 100 ? 'Everything kept. Your CFO would like a word.'
+      : mode === 'random' ? `At ${rate}% random sampling you have a ${missChance}% chance of missing any specific error. The one from the support ticket? Probably gone.`
+      : `Tail sampling at ${rate}%: every error and slow request survives. You dropped ${N - kept} requests nobody was going to read.`;
+    if (mode === 'tail' && touchedTail) root.querySelector('#gx7-callout').style.display = 'block';
+  }
+
+  root.querySelector('#gx7-slider').addEventListener('input', (event) => {
+    rate = Number(event.target.value); update();
+  });
+  for (const which of ['random', 'tail']) {
+    root.querySelector(`#gx7-${which}`).addEventListener('click', () => {
+      mode = which;
+      if (which === 'tail') touchedTail = true;
+      root.querySelector('#gx7-random').classList.toggle('on', which === 'random');
+      root.querySelector('#gx7-tail').classList.toggle('on', which === 'tail');
+      update();
+    });
+  }
+  update();
+})();
+</script>
+</figure>

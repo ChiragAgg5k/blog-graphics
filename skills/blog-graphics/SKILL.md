@@ -26,12 +26,15 @@ If the user hasn't chosen, present this table and let them pick a style to **cop
 | `style-samwho` | Playful pastel toys — rounded shapes, live simulations the reader can poke | Algorithms, queues, probabilistic structures |
 | `style-comeau` | Whimsical interactive playgrounds — springy motion, sliders, delight-first | Frontend/CSS/animation topics, tutorial posts |
 | `style-ciechanowski` | Museum-grade continuous simulations — physical realism, scrubbable | Physics-adjacent or geometric concepts (advanced; budget accordingly) |
+| `style-bun` | Dark dev-tool receipts — replayable terminals, glowing benchmark bars, count-ups | Release notes, benchmarks, CLI/performance stories |
+| `style-loggingsucks` | Rigged interactive toys with a voice — the reader acts, the punchline is computed from their action | Opinionated essays, observability/infra, teach-by-playing |
 
 Once chosen, **read that style skill fully** and obey its palette, typography, line weights, and motion rules exactly. Style skills live as sibling skills (installed alongside this one, or under `skills/` in this repo); if the chosen one isn't installed, fetch its `SKILL.md` and `references/example.html` from `github.com/ChiragAgg5k/blog-graphics`. Half-applied styles look AI-generated; fully-applied ones look designed. For "remix", pick one style as the base for layout/motion and change only what the user asked to change.
 
 ### 3. Read the technique references
 
 - `references/animation-techniques.md` — the motion building blocks, scoping rules, `transform-box` gotcha, reduced-motion requirements. Non-optional.
+- `references/interaction-patterns.md` — when and how to make the graphic playable: the act → picture/number/judgment loop, the pattern catalog (streams, sliders, rigged inputs, steppers, dot fields), progressive reveal, fake-data rules. Read whenever the graphic has any control.
 - `references/embedding.md` — deliverable format and platform notes.
 
 ### 4. Storyboard in text, then build
