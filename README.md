@@ -1,6 +1,9 @@
 # blog-graphics
 
 [![skills.sh](https://img.shields.io/badge/skills.sh-npx%20skills%20add%20ChiragAgg5k%2Fblog--graphics-ff1f8f)](https://www.skills.sh/ChiragAgg5k/blog-graphics)
+[![live specimen](https://img.shields.io/badge/live%20specimen-blog--graphics.appwrite.network-2247ff)](https://blog-graphics.appwrite.network)
+
+**See every style running live at [blog-graphics.appwrite.network](https://blog-graphics.appwrite.network)** — a specimen book where each ideology's example animation runs in the page, not as video.
 
 Agent skills for creating stunning animated graphics for technical blog posts — modeled on the design ideologies of engineering blogs that do this exceptionally well, reverse-engineered from their actual markup, CSS, and animation code.
 
